@@ -28,7 +28,7 @@ window.NFL_TEAMS = {
   "New York Giants":        { abbr: "NYG", city: "New York",      nick: "Giants",     c1: "#0B2265", c2: "#A71930" },
   "New York Jets":          { abbr: "NYJ", city: "New York",      nick: "Jets",       c1: "#125740", c2: "#FFFFFF" },
   "Philadelphia Eagles":    { abbr: "PHI", city: "Philadelphia",  nick: "Eagles",     c1: "#004C54", c2: "#A5ACAF" },
-  "Pittsburgh Steelers":    { abbr: "PIT", city: "Pittsburgh",    nick: "Steelers",   c1: "#101820", c2: "#FFB612" },
+  "Pittsburgh Steelers":    { abbr: "PIT", city: "Pittsburgh",    nick: "Steelers",   c1: "#FFB612", c2: "#101820" },
   "San Francisco 49ers":    { abbr: "SF",  city: "San Francisco", nick: "49ers",      c1: "#AA0000", c2: "#B3995D" },
   "Seattle Seahawks":       { abbr: "SEA", city: "Seattle",       nick: "Seahawks",   c1: "#002244", c2: "#69BE28" },
   "Tampa Bay Buccaneers":   { abbr: "TB",  city: "Tampa Bay",     nick: "Buccaneers", c1: "#D50A0A", c2: "#34302B" },
