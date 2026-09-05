@@ -435,12 +435,12 @@
       const sb = el("tbody");
       let rank = 0, prev = null;
       season.table.forEach((p, i) => { const key = p.correct + "/" + p.weeksWon; if (key !== prev) { rank = i + 1; prev = key; }
-        sb.append(el("tr", { class: i === 0 ? "leader" : "" }, el("td", { class: "rank" }, String(rank)), el("td", { class: "name" }, p.name), el("td", { class: "num big" }, String(p.correct)), el("td", { class: "num" + (p.pct === null ? " dim" : "") }, p.pct === null ? "—" : p.pct + "%"), el("td", { class: "num" }, String(p.weeksWon)), el("td", { class: "num" + (p.winnings ? " won" : " dim") }, p.winnings ? money(p.winnings) : "—")));
+        sb.append(el("tr", { class: i === 0 ? "leader" : "" }, el("td", { class: "rank" }, String(rank)), el("td", { class: "name" }, p.name), el("td", { class: "num big" }, String(p.correct)), el("td", { class: "num" + (p.pct === null ? " dim" : "") }, p.pct === null ? "—" : p.pct + "%"), el("td", { class: "num col-wks" }, String(p.weeksWon)), el("td", { class: "num" + (p.winnings ? " won" : " dim") }, p.winnings ? money(p.winnings) : "—")));
       });
       const weeksFinal = season.weeks.filter((w) => w.final).length;
       parts.push(el("section", { class: "card section", "aria-labelledby": "seasonTitle" },
         el("div", { class: "card-head" }, el("h2", { id: "seasonTitle" }, "Season"), el("span", { class: "meta" }, (weeksFinal === 1 ? "1 week final" : weeksFinal + " weeks final") + " · " + money(season.paidOut) + " paid out")),
-        el("div", { class: "table-wrap" }, el("table", {}, el("thead", {}, el("tr", {}, el("th", {}, "#"), el("th", {}, "Player"), el("th", { class: "num" }, "Total correct"), el("th", { class: "num", title: "Correct ÷ graded picks, season to date" }, "Correct %"), el("th", { class: "num" }, "Wks won"), el("th", { class: "num" }, "Won"))), sb))));
+        el("div", { class: "table-wrap" }, el("table", {}, el("thead", {}, el("tr", {}, el("th", {}, "#"), el("th", {}, "Player"), el("th", { class: "num" }, "Correct"), el("th", { class: "num", title: "Correct ÷ graded picks, season to date" }, "Correct %"), el("th", { class: "num col-wks" }, "Wks won"), el("th", { class: "num" }, "Won"))), sb))));
     } else {
       parts.push(el("p", { class: "rules" }, "Season standings start once Week 1 locks."));
     }

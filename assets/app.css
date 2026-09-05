@@ -260,8 +260,11 @@ td.name .pct { margin-left: 6px; }
   .badge { width: 40px; height: 40px; font-size: 15px; }
   .names .nick { font-size: 18px; letter-spacing: 0; }
   .game.final .team .score { width: 40px; height: 40px; font-size: 19px; }
-  th, td { padding: 12px 10px; }
+  th, td { padding: 12px 8px; }
   table.has-max .col-wrong { display: none; }
+  td.name .pct { display: block; margin-left: 0; font-size: 12px; line-height: 1.2; margin-top: 2px; }
+  td.name { line-height: 1.2; white-space: normal; max-width: 132px; overflow-wrap: anywhere; }
+  .col-wks { display: none; }
 }
 @media (max-width: 385px) { .names .nick { font-size: 17px; } }
 
