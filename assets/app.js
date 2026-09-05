@@ -440,7 +440,7 @@
       const weeksFinal = season.weeks.filter((w) => w.final).length;
       parts.push(el("section", { class: "card section", "aria-labelledby": "seasonTitle" },
         el("div", { class: "card-head" }, el("h2", { id: "seasonTitle" }, "Season"), el("span", { class: "meta" }, (weeksFinal === 1 ? "1 week final" : weeksFinal + " weeks final") + " · " + money(season.paidOut) + " paid out")),
-        el("div", { class: "table-wrap" }, el("table", {}, el("thead", {}, el("tr", {}, el("th", {}, "#"), el("th", {}, "Player"), el("th", { class: "num" }, "Correct"), el("th", { class: "num", title: "Correct ÷ graded picks, season to date" }, "Correct %"), el("th", { class: "num col-wks" }, "Wks won"), el("th", { class: "num" }, "Won"))), sb))));
+        el("div", { class: "table-wrap" }, el("table", {}, el("thead", {}, el("tr", {}, el("th", {}, "#"), el("th", {}, "Player"), el("th", { class: "num" }, "Correct"), el("th", { class: "num", title: "Correct ÷ graded picks, season to date", html: '<span class="hide-sm">Correct </span>%' }), el("th", { class: "num col-wks" }, "Wks won"), el("th", { class: "num" }, "Won"))), sb))));
     } else {
       parts.push(el("p", { class: "rules" }, "Season standings start once Week 1 locks."));
     }

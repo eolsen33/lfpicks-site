@@ -265,6 +265,9 @@ td.name .pct { margin-left: 6px; }
   td.name .pct { display: block; margin-left: 0; font-size: 12px; line-height: 1.2; margin-top: 2px; }
   td.name { line-height: 1.2; white-space: normal; max-width: 132px; overflow-wrap: anywhere; }
   .col-wks { display: none; }
+  .hide-sm { display: none; }
+  thead th { font-size: 11px; letter-spacing: 0.05em; }
+  td.big { font-size: 20px; }
 }
 @media (max-width: 385px) { .names .nick { font-size: 17px; } }
 
