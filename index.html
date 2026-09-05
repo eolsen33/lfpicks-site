@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Office Pick 'Em — Week 1 picks</title>
+<meta name="description" content="Pick every NFL game this week. First name and email, no account. Most correct picks wins the week; ties split the pot.">
+<meta name="theme-color" content="#0C1017">
+<meta name="robots" content="noindex">
+<link rel="canonical" href="https://lfpicks.ericolsen.studio/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Office Pick 'Em">
+<meta property="og:title" content="Office Pick 'Em — make your NFL picks">
+<meta property="og:description" content="Pick every NFL game this week. First name and email, no account. Most correct picks wins the week; ties split the pot.">
+<meta property="og:url" content="https://lfpicks.ericolsen.studio/">
+<meta property="og:image" content="https://lfpicks.ericolsen.studio/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Office Pick 'Em — NFL pick 'em pool">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Office Pick 'Em — make your NFL picks">
+<meta name="twitter:description" content="Pick every NFL game this week. First name and email, no account. Most correct picks wins the week; ties split the pot.">
+<meta name="twitter:image" content="https://lfpicks.ericolsen.studio/assets/og.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22%2334D77B%22/%3E%3Cpath d=%22M18 34l9 9 19-21%22 fill=%22none%22 stroke=%22%2306261A%22 stroke-width=%227%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="/assets/icon-180.png">
+<link rel="preload" href="/assets/fonts/BarlowCondensed-800.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Barlow-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/app.css">
+</head>
+<body data-page="sheet">
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/" aria-label="Office Pick 'Em home"><span class="brand-mark" aria-hidden="true">PE</span>Office Pick 'Em</a>
+    <nav class="nav" aria-label="Pages">
+      <a href="/" aria-current="page">Picks</a>
+      <a href="/results.html">Results</a>
+    </nav>
+  </div>
+</header>
+<main class="wrap" id="app" aria-live="polite" aria-busy="true"></main>
+<footer class="foot wrap"><p>Straight up · no spreads · ties split the pot. Schedule &amp; scores by <a href="https://the-odds-api.com" rel="noopener">The Odds API</a>. Built by <a href="https://www.ericolsen.studio" rel="noopener">EricOlsen.Studio</a>.</p></footer>
+<div class="submit-bar" id="bar">
+  <div class="wrap">
+    <div class="progress">
+      <div class="count"><b id="count">0</b>/<span id="total">16</span> picked<span id="barMsg"></span></div>
+      <div class="track" aria-hidden="true"><div class="fill" id="fill"></div></div>
+    </div>
+    <button type="button" class="btn btn-primary" id="submit" disabled>Submit picks</button>
+  </div>
+</div>
+<noscript><div class="wrap"><p class="notice error">This pick sheet needs JavaScript turned on.</p></div></noscript>
+<script>window.PICKS_API="https://picks.ericolsen.studio/api/pool";</script>
+<script src="/assets/teams.js"></script>
+<script src="/assets/app.js"></script>
+</body>
+</html>
