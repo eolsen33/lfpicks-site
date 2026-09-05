@@ -59,6 +59,7 @@
     return j;
   }
   const money = (n) => { n = Number(n) || 0; return "$" + (Number.isInteger(n) ? n.toLocaleString("en-US") : n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })); };
+  const pctTag = (e) => (e && e.pct !== null && e.pct !== undefined) ? ' <span class="pct" title="Season pick accuracy, ' + e.graded + ' graded">' + e.pct + '%</span>' : "";
   const validEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(v || "").trim());
   const groupBySlot = (games) => {
     const map = new Map();
@@ -140,7 +141,7 @@
       pills.append(el("span", { class: "pill quiet", html: ICON.users + "<span>" + (d.entries === 1 ? "1 sheet in" : d.entries + " sheets in") + (d.buyIn ? " · <b>" + money(d.pot) + "</b> pot" : "") + "</span>" }));
 
       if (d.entrants && d.entrants.length) {
-        head.append(el("p", { class: "whos-in", html: "<b>In so far:</b> " + d.entrants.map(escapeHtml).join(", ") }));
+        head.append(el("p", { class: "whos-in", html: "<b>In so far:</b> " + d.entrants.map((e) => escapeHtml(e.label) + pctTag(e)).join(", ") }));
       }
 
       const parts = [head];
@@ -366,7 +367,7 @@
       if (r.entrants && r.entrants.length) {
         parts.push(el("section", { class: "card section", "aria-labelledby": "whosInTitle" },
           el("div", { class: "card-head" }, el("h2", { id: "whosInTitle" }, "Who's in"), el("span", { class: "meta" }, (r.entries === 1 ? "1 sheet" : r.entries + " sheets") + " · " + money(r.pot))),
-          el("ul", { class: "entrants" }, ...r.entrants.map((n) => el("li", {}, n)))));
+          el("ul", { class: "entrants" }, ...r.entrants.map((e) => el("li", { html: escapeHtml(e.label) + pctTag(e) })))));
       } else {
         parts.push(el("div", { class: "card empty" }, el("h2", {}, "Nobody's in yet"), el("p", {}, "Be the first — it takes two minutes.")));
       }
@@ -393,7 +394,7 @@
           const leader = r.final && p.correct === r.topScore;
           tb.append(el("tr", { class: leader ? "leader" : "" },
             el("td", { class: "rank" }, String(rank)),
-            el("td", { class: "name", html: escapeHtml(p.name) + (leader ? ICON.trophy : "") }),
+            el("td", { class: "name", html: escapeHtml(p.name) + pctTag({ pct: p.seasonPct, graded: p.seasonGraded }) + (leader ? ICON.trophy : "") }),
             el("td", { class: "num big" }, String(p.correct)),
             el("td", { class: "num dim col-wrong" }, String(p.wrong)),
             el("td", { class: "num dim" }, String(p.pending)),
@@ -434,12 +435,12 @@
       const sb = el("tbody");
       let rank = 0, prev = null;
       season.table.forEach((p, i) => { const key = p.correct + "/" + p.weeksWon; if (key !== prev) { rank = i + 1; prev = key; }
-        sb.append(el("tr", { class: i === 0 ? "leader" : "" }, el("td", { class: "rank" }, String(rank)), el("td", { class: "name" }, p.name), el("td", { class: "num big" }, String(p.correct)), el("td", { class: "num" }, String(p.weeksWon)), el("td", { class: "num" + (p.winnings ? " won" : " dim") }, p.winnings ? money(p.winnings) : "—")));
+        sb.append(el("tr", { class: i === 0 ? "leader" : "" }, el("td", { class: "rank" }, String(rank)), el("td", { class: "name" }, p.name), el("td", { class: "num big" }, String(p.correct)), el("td", { class: "num" + (p.pct === null ? " dim" : "") }, p.pct === null ? "—" : p.pct + "%"), el("td", { class: "num" }, String(p.weeksWon)), el("td", { class: "num" + (p.winnings ? " won" : " dim") }, p.winnings ? money(p.winnings) : "—")));
       });
       const weeksFinal = season.weeks.filter((w) => w.final).length;
       parts.push(el("section", { class: "card section", "aria-labelledby": "seasonTitle" },
         el("div", { class: "card-head" }, el("h2", { id: "seasonTitle" }, "Season"), el("span", { class: "meta" }, (weeksFinal === 1 ? "1 week final" : weeksFinal + " weeks final") + " · " + money(season.paidOut) + " paid out")),
-        el("div", { class: "table-wrap" }, el("table", {}, el("thead", {}, el("tr", {}, el("th", {}, "#"), el("th", {}, "Player"), el("th", { class: "num" }, "Total correct"), el("th", { class: "num" }, "Wks won"), el("th", { class: "num" }, "Won"))), sb))));
+        el("div", { class: "table-wrap" }, el("table", {}, el("thead", {}, el("tr", {}, el("th", {}, "#"), el("th", {}, "Player"), el("th", { class: "num" }, "Total correct"), el("th", { class: "num", title: "Correct ÷ graded picks, season to date" }, "Correct %"), el("th", { class: "num" }, "Wks won"), el("th", { class: "num" }, "Won"))), sb))));
     } else {
       parts.push(el("p", { class: "rules" }, "Season standings start once Week 1 locks."));
     }
