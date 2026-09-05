@@ -139,6 +139,10 @@
       if (locksAt && d.locked) pills.append(el("span", { class: "pill locked", html: ICON.lock + "<span>Locked · kicked off " + fmtLock(d.locksAt) + "</span>" }));
       pills.append(el("span", { class: "pill quiet", html: ICON.users + "<span>" + (d.entries === 1 ? "1 sheet in" : d.entries + " sheets in") + (d.buyIn ? " · <b>" + money(d.pot) + "</b> pot" : "") + "</span>" }));
 
+      if (d.entrants && d.entrants.length) {
+        head.append(el("p", { class: "whos-in", html: "<b>In so far:</b> " + d.entrants.map(escapeHtml).join(", ") }));
+      }
+
       const parts = [head];
       if (!d.games.length) {
         parts.push(el("div", { class: "card empty" }, el("h2", {}, "Slate not posted yet"), el("p", {}, "Week " + d.week + " games haven't been published. Check back soon.")));
@@ -359,6 +363,13 @@
       pills.append(el("span", { class: "pill locked", html: ICON.trophy + "<span><b>" + money(r.pot) + "</b> in the pot so far</span>" }));
       pills.append(el("span", { class: "pill quiet", html: ICON.users + "<span>" + (r.entries === 1 ? "1 sheet in" : r.entries + " sheets in") + "</span>" }));
       parts.push(notice("", "<b>Picks are hidden until kickoff.</b> Everyone's sheet and the standings appear here once Week " + week + " locks" + (r.locksAt ? " (" + fmtLock(r.locksAt) + ")" : "") + ". Haven't picked yet? <a href=\"/\">Make your picks</a>."));
+      if (r.entrants && r.entrants.length) {
+        parts.push(el("section", { class: "card section", "aria-labelledby": "whosInTitle" },
+          el("div", { class: "card-head" }, el("h2", { id: "whosInTitle" }, "Who's in"), el("span", { class: "meta" }, (r.entries === 1 ? "1 sheet" : r.entries + " sheets") + " · " + money(r.pot))),
+          el("ul", { class: "entrants" }, ...r.entrants.map((n) => el("li", {}, n)))));
+      } else {
+        parts.push(el("div", { class: "card empty" }, el("h2", {}, "Nobody's in yet"), el("p", {}, "Be the first — it takes two minutes.")));
+      }
     } else {
       if (r.final) {
         const names = r.leaders || [];
