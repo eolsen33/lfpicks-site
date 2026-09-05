@@ -315,13 +315,13 @@
             el("td", { class: "rank" }, String(rank)),
             el("td", { class: "name", html: escapeHtml(p.name) + (leader ? ICON.trophy : "") }),
             el("td", { class: "num big" }, String(p.correct)),
-            el("td", { class: "num dim" }, String(p.wrong)),
+            el("td", { class: "num dim col-wrong" }, String(p.wrong)),
             el("td", { class: "num dim" }, String(p.pending)),
             r.final ? null : el("td", { class: "num" }, String(p.correct + p.pending))));
         });
         parts.push(el("section", { class: "card section", "aria-labelledby": "standingsTitle" },
           el("div", { class: "card-head" }, el("h2", { id: "standingsTitle" }, "Week " + week + " standings"), el("span", { class: "meta" }, r.final ? "Final" : r.completedGames + "/" + r.games.length + " games final")),
-          el("div", { class: "table-wrap" }, el("table", {}, el("thead", {}, el("tr", {}, el("th", {}, "#"), el("th", {}, "Player"), el("th", { class: "num" }, "Correct"), el("th", { class: "num" }, "Wrong"), el("th", { class: "num" }, "Left"), r.final ? null : el("th", { class: "num", title: "Correct plus games still to play" }, "Max"))), tb))));
+          el("div", { class: "table-wrap" }, el("table", { class: r.final ? "" : "has-max" }, el("thead", {}, el("tr", {}, el("th", {}, "#"), el("th", {}, "Player"), el("th", { class: "num" }, "Correct"), el("th", { class: "num col-wrong" }, "Wrong"), el("th", { class: "num" }, "Left"), r.final ? null : el("th", { class: "num", title: "Correct plus games still to play" }, "Max"))), tb))));
 
         // grid
         const winnerOf = {}; for (const g of r.games) winnerOf[g.id] = g.winner;

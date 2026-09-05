@@ -209,20 +209,33 @@ main.wrap { padding-top: 20px; padding-bottom: 24px; }
 .rules { margin: 8px 4px 0; color: var(--text-3); font-size: 14px; max-width: 60ch; }
 
 
-/* Final rows on phones: the score takes the badge's slot so team names stay whole. */
+/* Final rows on phones: the score takes the badge's slot, painted in the team's
+   colors so identity survives, and the city line yields to the nickname. */
 @media (max-width: 520px) {
   .game.final .team .badge { display: none; }
   .game.final .team .score {
     order: -1; margin: 0; flex: none; width: 44px; height: 44px; border-radius: 10px;
-    display: grid; place-items: center; font-size: 22px;
-    background: var(--bg-3); color: var(--text);
+    display: grid; place-items: center; font-size: 21px;
+    background: var(--c1); color: var(--ink);
+    box-shadow: inset 0 0 0 2px var(--c2), 0 2px 6px -2px rgba(0,0,0,.6);
   }
-  .game.final .team[aria-pressed="true"] .score { background: rgba(255,255,255,0.18); color: var(--ink); }
-  .game.final .team:not(.winner) .score { color: var(--text-3); }
-  .game.final .team[aria-pressed="true"]:not(.winner) .score { color: var(--ink); opacity: 0.8; }
+  .game.final .team[aria-pressed="true"] .score { background: var(--ink); color: var(--c1); }
+  .game.final .team:not(.winner) .score { filter: saturate(0.4); opacity: 0.75; }
   .game.final .names .city { display: none; }
-  .game.final .names .nick { font-size: 18px; }
+  .game.final .names .nick { font-size: 17px; letter-spacing: 0; }
 }
+
+
+/* Narrow phones: tighter row so ten-letter nicknames (BUCCANEERS, COMMANDERS) fit whole. */
+@media (max-width: 430px) {
+  .team { padding: 10px 10px; gap: 10px; }
+  .badge { width: 40px; height: 40px; font-size: 15px; }
+  .names .nick { font-size: 18px; letter-spacing: 0; }
+  .game.final .team .score { width: 40px; height: 40px; font-size: 19px; }
+  th, td { padding: 12px 10px; }
+  table.has-max .col-wrong { display: none; }
+}
+@media (max-width: 385px) { .names .nick { font-size: 17px; } }
 
 /* ------------------------------------------------------------ submit bar */
 .submit-bar {
