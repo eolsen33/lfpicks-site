@@ -58,6 +58,7 @@
     if (!r.ok) throw new Error(j.message || "Something went wrong (" + r.status + ").");
     return j;
   }
+  const money = (n) => { n = Number(n) || 0; return "$" + (Number.isInteger(n) ? n.toLocaleString("en-US") : n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })); };
   const validEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(v || "").trim());
   const groupBySlot = (games) => {
     const map = new Map();
@@ -82,7 +83,8 @@
       "data-game": game.id, "data-side": side,
     },
       el("span", { class: "badge", "aria-hidden": "true" }, t.abbr),
-      el("span", { class: "names" }, el("span", { class: "city" }, t.city), el("span", { class: "nick" }, t.nick)),
+      el("span", { class: "names" }, el("span", { class: "city" }, t.city),
+        el("span", { class: "nick" }, el("span", { class: "txt" }, t.nick, el("span", { class: "strike", "aria-hidden": "true", html: '<svg viewBox="0 0 100 24" preserveAspectRatio="none"><path d="M3 15 C 18 8, 30 19, 45 12 S 72 6, 84 14 S 94 12, 97 9" /></svg>' })))),
     );
     if (game.completed && score !== null) btn.append(el("span", { class: "score", "aria-label": name + " " + score }, String(score)));
     if (game.winner === side) btn.classList.add("winner");
@@ -135,7 +137,7 @@
       const pills = $(".pills", head);
       if (locksAt && !d.locked) pills.append(el("span", { class: "pill live", id: "lockPill", html: ICON.lock + "<span>Locks in <b id=\"cd\">" + countdown(locksAt - Date.now()) + "</b> · " + fmtLock(d.locksAt) + "</span>" }));
       if (locksAt && d.locked) pills.append(el("span", { class: "pill locked", html: ICON.lock + "<span>Locked · kicked off " + fmtLock(d.locksAt) + "</span>" }));
-      pills.append(el("span", { class: "pill quiet", html: ICON.users + "<span>" + (d.entries === 1 ? "1 sheet in" : d.entries + " sheets in") + "</span>" }));
+      pills.append(el("span", { class: "pill quiet", html: ICON.users + "<span>" + (d.entries === 1 ? "1 sheet in" : d.entries + " sheets in") + (d.buyIn ? " · <b>" + money(d.pot) + "</b> pot" : "") + "</span>" }));
 
       const parts = [head];
       if (!d.games.length) {
@@ -166,7 +168,7 @@
       }
       slate.addEventListener("click", onTeamClick);
       parts.push(slate);
-      parts.push(el("p", { class: "rules" }, "Pick the winner of every game, straight up. Most correct picks takes the week; if people tie, they split the pot. No spreads, no tiebreaker."));
+      parts.push(el("p", { class: "rules" }, (d.buyIn ? money(d.buyIn) + " a sheet, as many sheets as you like. " : "") + "Pick the winner of every game, straight up. Most correct picks takes the week's pot; if people tie, they split it. No spreads, no tiebreaker."));
       root.replaceChildren(...parts);
       for (const id in state.picks) { const row = slate.querySelector('.game[data-game="' + id + '"]'); if (row) applyPick(row, state.picks[id], d.games.find((g) => g.id === id), d.locked); }
       updateBar();
@@ -354,17 +356,21 @@
     const parts = [head];
     if (!r.locked) {
       pills.append(el("span", { class: "pill live", html: ICON.lock + "<span>Locks " + (r.locksAt ? fmtLock(r.locksAt) : "soon") + "</span>" }));
+      pills.append(el("span", { class: "pill locked", html: ICON.trophy + "<span><b>" + money(r.pot) + "</b> in the pot so far</span>" }));
       pills.append(el("span", { class: "pill quiet", html: ICON.users + "<span>" + (r.entries === 1 ? "1 sheet in" : r.entries + " sheets in") + "</span>" }));
       parts.push(notice("", "<b>Picks are hidden until kickoff.</b> Everyone's sheet and the standings appear here once Week " + week + " locks" + (r.locksAt ? " (" + fmtLock(r.locksAt) + ")" : "") + ". Haven't picked yet? <a href=\"/\">Make your picks</a>."));
     } else {
       if (r.final) {
         const names = r.leaders || [];
-        const who = names.length === 0 ? "" : names.length === 1 ? names[0] + " takes Week " + week : names.length === 2 ? names.join(" & ") + " split Week " + week : names.slice(0, -1).join(", ") + " & " + names[names.length - 1] + " split Week " + week;
+        const pot = money(r.pot);
+        const list = names.length <= 2 ? names.join(" & ") : names.slice(0, -1).join(", ") + " & " + names[names.length - 1];
+        const who = names.length === 0 ? "" : names.length === 1 ? names[0] + " takes " + pot : list + " split " + pot + " (" + money(r.share) + " each)";
         pills.append(el("span", { class: "pill locked", html: ICON.trophy + "<span>Final · <b>" + escapeHtml(who) + "</b>" + (r.topScore !== undefined ? " · " + r.topScore + "/" + r.games.length : "") + "</span>" }));
       } else {
         pills.append(el("span", { class: "pill live", html: ICON.clock + "<span><b>" + r.completedGames + "</b> of " + r.games.length + " final</span>" }));
+        pills.append(el("span", { class: "pill locked", html: ICON.trophy + "<span><b>" + money(r.pot) + "</b> pot</span>" }));
       }
-      pills.append(el("span", { class: "pill quiet", html: ICON.users + "<span>" + (r.entries === 1 ? "1 sheet" : r.entries + " sheets") + "</span>" }));
+      pills.append(el("span", { class: "pill quiet", html: ICON.users + "<span>" + (r.entries === 1 ? "1 sheet" : r.entries + " sheets") + " × " + money(r.buyIn) + "</span>" }));
 
       if (!r.players.length) {
         parts.push(el("div", { class: "card empty" }, el("h2", {}, "Nobody picked"), el("p", {}, "No sheets came in for Week " + week + ".")));
@@ -417,12 +423,12 @@
       const sb = el("tbody");
       let rank = 0, prev = null;
       season.table.forEach((p, i) => { const key = p.correct + "/" + p.weeksWon; if (key !== prev) { rank = i + 1; prev = key; }
-        sb.append(el("tr", { class: i === 0 ? "leader" : "" }, el("td", { class: "rank" }, String(rank)), el("td", { class: "name" }, p.name), el("td", { class: "num big" }, String(p.correct)), el("td", { class: "num" }, String(p.weeksWon))));
+        sb.append(el("tr", { class: i === 0 ? "leader" : "" }, el("td", { class: "rank" }, String(rank)), el("td", { class: "name" }, p.name), el("td", { class: "num big" }, String(p.correct)), el("td", { class: "num" }, String(p.weeksWon)), el("td", { class: "num" + (p.winnings ? " won" : " dim") }, p.winnings ? money(p.winnings) : "—")));
       });
       const weeksFinal = season.weeks.filter((w) => w.final).length;
       parts.push(el("section", { class: "card section", "aria-labelledby": "seasonTitle" },
-        el("div", { class: "card-head" }, el("h2", { id: "seasonTitle" }, "Season"), el("span", { class: "meta" }, weeksFinal === 1 ? "1 week final" : weeksFinal + " weeks final")),
-        el("div", { class: "table-wrap" }, el("table", {}, el("thead", {}, el("tr", {}, el("th", {}, "#"), el("th", {}, "Player"), el("th", { class: "num" }, "Total correct"), el("th", { class: "num" }, "Wks won"))), sb))));
+        el("div", { class: "card-head" }, el("h2", { id: "seasonTitle" }, "Season"), el("span", { class: "meta" }, (weeksFinal === 1 ? "1 week final" : weeksFinal + " weeks final") + " · " + money(season.paidOut) + " paid out")),
+        el("div", { class: "table-wrap" }, el("table", {}, el("thead", {}, el("tr", {}, el("th", {}, "#"), el("th", {}, "Player"), el("th", { class: "num" }, "Total correct"), el("th", { class: "num" }, "Wks won"), el("th", { class: "num" }, "Won"))), sb))));
     } else {
       parts.push(el("p", { class: "rules" }, "Season standings start once Week 1 locks."));
     }

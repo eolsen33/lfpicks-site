@@ -192,9 +192,19 @@ main.wrap { padding-top: 20px; padding-bottom: 24px; }
   box-shadow: inset 0 0 0 2px var(--c2), 0 2px 6px -2px rgba(0,0,0,.6);
   transition: transform var(--dur) var(--ease);
 }
-.names { display: flex; flex-direction: column; min-width: 0; line-height: 1.15; }
+.names { position: relative; display: flex; flex-direction: column; min-width: 0; line-height: 1.15; }
+/* The cross-out: a marker scribble that draws itself across the team you passed on. */
+.strike { position: absolute; left: -4px; right: -4px; top: 18%; height: 60%; pointer-events: none; opacity: 0; transform: rotate(-3deg); }
+.team.home .strike { transform: rotate(3deg); }
+.strike svg { width: 100%; height: 100%; overflow: visible; }
+.strike path { fill: none; stroke: var(--red); stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; stroke-dasharray: 130; stroke-dashoffset: 130; opacity: 0.92; filter: drop-shadow(0 1px 0 rgba(0,0,0,.35)); }
+.game.picked .team[aria-pressed="false"] .strike { opacity: 1; }
+.game.picked .team[aria-pressed="false"] .strike path { animation: strike 320ms cubic-bezier(0.3, 0.9, 0.4, 1) forwards; }
+.game.picked .team[aria-pressed="false"] .names .nick { color: var(--text-3); }
+@keyframes strike { to { stroke-dashoffset: 0; } }
 .names .city { font-size: 13px; color: var(--text-2); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .names .nick { font-family: var(--font-display); font-weight: 700; font-size: 21px; text-transform: uppercase; letter-spacing: 0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.names .nick .txt { position: relative; }
 .team .score { margin-left: auto; flex: none; font-family: var(--font-display); font-weight: 800; font-size: 26px; color: var(--text-2); }
 .team.home .score { margin-left: 0; margin-right: auto; }
 /* selection */
@@ -324,6 +334,7 @@ td .trophy { color: var(--gold); vertical-align: -3px; margin-left: 6px; width: 
 tr.leader td.name, tr.leader td.rank { color: var(--gold); }
 td.big { font-family: var(--font-display); font-size: 22px; font-weight: 800; }
 td.dim { color: var(--text-3); }
+td.won { color: var(--gold); font-weight: 700; }
 tbody tr:hover td { background: rgba(255,255,255,0.02); }
 /* pick grid */
 .grid-table th.game-col { text-align: center; padding: 10px 6px 8px; letter-spacing: 0; font-size: 12px; }
