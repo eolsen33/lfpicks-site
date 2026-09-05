@@ -145,6 +145,16 @@ main.wrap { padding-top: 20px; padding-bottom: 24px; }
 .who .hint .icon { width: 16px; height: 16px; margin-top: 3px; color: var(--text-3); }
 .who .welcome { margin-top: 12px; color: var(--accent); font-weight: 600; font-size: 15px; display: flex; gap: 8px; align-items: center; }
 
+.chooser { margin-top: 14px; padding: 12px 14px; border-radius: var(--radius-s); background: var(--bg); border: 1px solid var(--line-2); }
+.chooser.urgent { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.chooser-msg { display: flex; gap: 8px; align-items: flex-start; color: var(--text-2); font-size: 15px; margin-bottom: 10px; }
+.chooser-msg .icon { width: 16px; height: 16px; margin-top: 3px; color: var(--accent); flex: none; }
+.chooser-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.chooser-btns .btn { height: 40px; padding: 0 14px; font-size: 15px; }
+.chooser-btns .btn.on { border-color: var(--accent); color: var(--accent); }
+.who .sheetname { margin-top: 12px; }
+#sheetTabs { margin-bottom: 14px; }
+
 /* ----------------------------------------------------------------- slate */
 .slot { margin-bottom: 20px; }
 .slot-head {

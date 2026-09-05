@@ -112,7 +112,8 @@
   async function sheet() {
     const root = $("#app");
     const bar = $("#bar");
-    const state = { data: null, picks: {}, total: 0, ready: false, submitted: false, editing: false, timer: null };
+    const state = { data: null, picks: {}, total: 0, ready: false, submitted: false, editing: false, timer: null,
+      sheets: [], sheetId: null, newSheet: false, sheetName: "", activeLabel: "" };
 
     root.replaceChildren(el("div", { class: "week-head" }, el("div", { class: "week-title" }, el("h1", {}, "Week"), el("span", { class: "sub" }, "Loading the slate…"))),
       el("div", { class: "games", "aria-hidden": "true" }, ...Array.from({ length: 5 }, () => el("div", { class: "skeleton" }))));
@@ -149,7 +150,9 @@
           el("div", { class: "fields" },
             el("div", { class: "field" }, el("label", { for: "firstName" }, "First name"), el("input", { id: "firstName", name: "firstName", autocomplete: "given-name", placeholder: "Eric", maxlength: "40", required: "", oninput: updateBar })),
             el("div", { class: "field" }, el("label", { for: "email" }, "Email"), el("input", { id: "email", name: "email", type: "email", autocomplete: "email", inputmode: "email", placeholder: "you@work.com", required: "", oninput: onEmailInput, onblur: onEmailBlur }))),
-          el("p", { class: "hint", html: ICON.info + "<span>Your email is your ticket: no password, we just use it to keep your stats. Submit again with the same email to change your picks before lock.</span>" }),
+          el("p", { class: "hint", html: ICON.info + "<span>Your email is your ticket: no password, we just use it to keep your stats. You can enter more than one sheet; come back with the same email to change or add one before lock.</span>" }),
+          el("div", { class: "chooser", id: "chooser", hidden: "" }),
+          el("div", { class: "field sheetname", id: "sheetNameField", hidden: "" }, el("label", { for: "sheetName" }, "Sheet name (optional)"), el("input", { id: "sheetName", name: "sheetName", placeholder: "Upset special", maxlength: "40", oninput: () => { state.sheetName = $("#sheetName").value; } })),
           el("p", { class: "welcome", id: "welcome", hidden: "" }));
         parts.push(who);
       }
@@ -204,7 +207,7 @@
       msg.textContent = reason ? " · " + reason : "";
       msg.classList.toggle("msg", n === total && !!reason);
       submit.disabled = !!reason;
-      submit.textContent = state.editing ? "Update picks" : "Submit picks";
+      submit.textContent = state.sheetId ? "Update " + shortLabel(activeSheet()) : state.newSheet ? "Submit new sheet" : "Submit picks";
       if (!reason && !state.ready) { state.ready = true; submit.classList.add("ready"); setTimeout(() => submit.classList.remove("ready"), 800); }
       if (reason) state.ready = false;
     }
@@ -216,15 +219,57 @@
       if (!validEmail(email)) return;
       try {
         const r = await api("/entry?email=" + encodeURIComponent(email.trim().toLowerCase()));
-        if (!r.found || r.week !== state.data.week || !Object.keys(r.picks).length) { if (!fromStorage) hideWelcome(); return; }
-        state.picks = Object.assign({}, r.picks);
-        state.editing = true;
+        if (!r.found || r.week !== state.data.week || !r.sheets.length) { state.sheets = []; renderChooser(null); if (!fromStorage) hideWelcome(); return; }
+        state.sheets = r.sheets;
         const fn = $("#firstName"); if (fn && !fn.value && r.firstName) fn.value = r.firstName;
-        for (const id in state.picks) { const row = document.querySelector('.game[data-game="' + id + '"]'); if (row) applyPick(row, state.picks[id], state.data.games.find((g) => g.id === id), state.data.locked); }
-        const w = $("#welcome"); if (w) { w.innerHTML = ICON.check + "<span>Welcome back, " + escapeHtml(r.firstName || "") + " — your Week " + r.week + " picks are loaded. Change any and hit Update.</span>"; w.hidden = false; }
+        if (state.data.locked) { chooseSheet(r.sheets[0]); return; }
+        renderChooser(r.firstName, "You already have " + (r.sheets.length === 1 ? "a sheet" : r.sheets.length + " sheets") + " in for Week " + r.week + ". Edit one, or start another:");
         updateBar();
       } catch (_) { /* silent: entry lookup is a convenience */ }
     }
+    // The choice Eric asked for: replace an existing sheet or add a new one.
+    function renderChooser(firstName, message, opts) {
+      const c = $("#chooser"); if (!c) return;
+      if (!state.sheets.length) { c.hidden = true; c.replaceChildren(); return; }
+      const resubmit = !!(opts && opts.resubmit);
+      const btns = state.sheets.map((sh) => el("button", { type: "button", class: "btn btn-ghost" + (state.sheetId === sh.id ? " on" : ""), onclick: () => {
+        if (resubmit) { state.sheetId = sh.id; state.newSheet = false; state.activeLabel = sh.label; updateBar(); $("#submit").click(); } else chooseSheet(sh);
+      } }, (resubmit ? "Replace " : "Edit ") + shortLabel(sh)));
+      btns.push(el("button", { type: "button", class: "btn " + (state.newSheet ? "btn-primary" : "btn-ghost"), onclick: () => {
+        if (resubmit) { state.sheetId = null; state.newSheet = true; state.activeLabel = ""; updateBar(); $("#submit").click(); } else chooseNew();
+      } }, "+ New sheet"));
+      c.replaceChildren(el("p", { class: "chooser-msg", html: (opts && opts.urgent ? ICON.info : ICON.check) + "<span>" + escapeHtml(message) + "</span>" }), el("div", { class: "chooser-btns" }, ...btns));
+      c.classList.toggle("urgent", !!(opts && opts.urgent));
+      c.hidden = false;
+    }
+    function chooseSheet(sh) {
+      state.sheetId = sh.id; state.newSheet = false; state.activeLabel = sh.label; state.editing = true;
+      state.picks = Object.assign({}, sh.picks);
+      for (const row of document.querySelectorAll(".game")) applyPick(row, state.picks[row.dataset.game], state.data.games.find((g) => g.id === row.dataset.game), state.data.locked);
+      const f = $("#sheetNameField"); if (f) { f.hidden = false; $("#sheetName").value = sh.name || ""; state.sheetName = sh.name || ""; }
+      const w = $("#welcome"); if (w) { w.innerHTML = ICON.check + "<span>Editing " + escapeHtml(sh.label) + ". Change any pick and hit Update.</span>"; w.hidden = false; }
+      renderChooser(null, "You already have " + (state.sheets.length === 1 ? "a sheet" : state.sheets.length + " sheets") + " in for Week " + state.data.week + ". Edit one, or start another:");
+      renderSheetTabs();
+      updateBar();
+    }
+    function chooseNew() {
+      state.sheetId = null; state.newSheet = true; state.activeLabel = ""; state.editing = false;
+      state.picks = {};
+      for (const row of document.querySelectorAll(".game")) applyPick(row, null, null, false);
+      const f = $("#sheetNameField"); if (f) { f.hidden = false; $("#sheetName").value = ""; state.sheetName = ""; }
+      const w = $("#welcome"); if (w) { w.innerHTML = ICON.check + "<span>New sheet #" + (state.sheets.length + 1) + " — pick all " + state.total + " games, then submit.</span>"; w.hidden = false; }
+      renderChooser(null, "Starting a new sheet. Your other " + (state.sheets.length === 1 ? "sheet stays" : state.sheets.length + " sheets stay") + " as they are.");
+      updateBar();
+    }
+    // Locked week with several sheets: chips to switch which one is highlighted.
+    function renderSheetTabs() {
+      const old = $("#sheetTabs"); if (old) old.remove();
+      if (!state.data.locked || state.sheets.length < 2) return;
+      const tabs = el("div", { class: "chips", id: "sheetTabs", role: "group", "aria-label": "Your sheets" }, ...state.sheets.map((sh) => el("button", { type: "button", class: "chip", "aria-pressed": sh.id === state.sheetId ? "true" : "false", onclick: () => chooseSheet(sh) }, sh.label)));
+      const slate = $("#slate"); if (slate) slate.parentNode.insertBefore(tabs, slate);
+    }
+    const shortLabel = (sh) => (sh && sh.name) ? sh.name : "sheet #" + (sh ? sh.num : 1);
+    const activeSheet = () => state.sheets.find((sh) => sh.id === state.sheetId) || null;
     function hideWelcome() { const w = $("#welcome"); if (w) w.hidden = true; }
 
     $("#submit").addEventListener("click", async () => {
@@ -232,9 +277,26 @@
       const firstName = $("#firstName").value.trim(), email = $("#email").value.trim().toLowerCase();
       submit.classList.add("busy"); submit.textContent = "Saving…";
       try {
-        const r = await api("/submit", { method: "POST", body: JSON.stringify({ firstName, email, week: state.data.week, picks: state.picks }) });
+        const payload = { firstName, email, week: state.data.week, picks: state.picks };
+        if (state.sheetId) payload.sheetId = state.sheetId;
+        if (state.newSheet) payload.newSheet = true;
+        if (state.sheetId || state.newSheet) payload.sheetName = state.sheetName || "";
+        const res = await fetch(API + "/submit", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+        const r = await res.json().catch(() => ({}));
+        if (res.status === 409 && r.needsChoice) {
+          state.sheets = r.sheets;
+          renderChooser(firstName, r.message + " Replace one, or add a new sheet?", { urgent: true, resubmit: true });
+          $(".who").hidden = false;
+          $("#chooser").scrollIntoView({ behavior: "smooth", block: "center" });
+          return;
+        }
+        if (!res.ok) throw new Error(r.message || "Something went wrong (" + res.status + ").");
         store.me = { firstName, email };
         state.submitted = true; state.editing = true;
+        state.sheetId = r.sheet.id; state.newSheet = false; state.activeLabel = r.sheet.label;
+        const idx = state.sheets.findIndex((sh) => sh.id === r.sheet.id);
+        const saved = Object.assign({}, r.sheet, { picks: Object.assign({}, state.picks) });
+        if (idx >= 0) state.sheets[idx] = saved; else state.sheets.push(saved);
         showDone(true, firstName, r);
       } catch (err) {
         const n = $("#submitError") || root.insertBefore(notice("error", ""), root.firstChild.nextSibling);
@@ -252,9 +314,10 @@
         el("div", { class: "check", html: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5l5 5L19.5 7"/></svg>' }),
         el("div", {},
           el("h2", {}, "You're in, " + firstName + "."),
-          el("p", {}, r.count + " picks saved for Week " + d.week + ". You can change them until " + fmtLock(d.locksAt) + " — just come back with the same email. Everyone's picks and the standings unlock on the Results page at kickoff; finals post after each game window."),
+          el("p", {}, (r.sheet && r.sheet.num > 1 ? shortLabel(r.sheet).replace(/^sheet/, "Sheet") + " saved: " : "") + r.count + " picks saved for Week " + d.week + (r.sheetsCount > 1 ? " (you have " + r.sheetsCount + " sheets in)" : "") + ". You can change them until " + fmtLock(d.locksAt) + " — just come back with the same email. Everyone's picks and the standings unlock on the Results page at kickoff; finals post after each game window."),
           el("div", { class: "actions" },
             el("button", { type: "button", class: "btn btn-ghost", onclick: () => { state.submitted = false; showDone(false); $("#slate").scrollIntoView({ behavior: "smooth" }); } }, "Edit picks"),
+            el("button", { type: "button", class: "btn btn-ghost", onclick: () => { state.submitted = false; showDone(false); chooseNew(); window.scrollTo({ top: 0, behavior: "smooth" }); } }, "+ Another sheet"),
             el("a", { class: "btn btn-ghost", href: "/results.html", html: "Results " + ICON.arrow }))));
       if (who) who.hidden = true;
       root.insertBefore(done, slate);
